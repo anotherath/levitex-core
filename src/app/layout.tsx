@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
+import ScrollToTop from "@/components/ui/ScrollToTop";
 
 export default function RootLayout({
   children,
@@ -32,6 +33,7 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Footer />
+        <ScrollToTop />
       </body>
     </html>
   );

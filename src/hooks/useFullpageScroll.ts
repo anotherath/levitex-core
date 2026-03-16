@@ -37,6 +37,15 @@ export function useFullpageScroll(containerRef: React.RefObject<HTMLElement | nu
     const sections = Array.from(
       container.querySelectorAll<HTMLElement>(":scope > section, :scope > footer")
     );
+
+    // If no footer found in container, look for a global footer
+    if (!sections.some((s) => s.tagName.toLowerCase() === "footer")) {
+      const globalFooter = document.querySelector("footer");
+      if (globalFooter) {
+        sections.push(globalFooter as HTMLElement);
+      }
+    }
+
     sectionsRef.current = sections;
 
     // Determine which section is currently in view on load
@@ -118,13 +127,22 @@ export function useFullpageScroll(containerRef: React.RefObject<HTMLElement | nu
       }
     };
 
+    updateCurrentIndex();
+
+    const handleScroll = () => {
+      if (isScrolling.current) return;
+      updateCurrentIndex();
+    };
+
     window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("scroll", handleScroll);
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
     window.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     return () => {
       window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchend", handleTouchEnd);

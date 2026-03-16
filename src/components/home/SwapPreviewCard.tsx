@@ -45,15 +45,10 @@ export default function SwapPreviewCard() {
       <motion.div
         className="relative w-full max-w-[420px] mx-auto rounded-[28px] overflow-hidden transition-colors duration-300"
         style={{
-          background: "rgba(255, 255, 255, 0.55)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          border: "1px solid rgba(255, 255, 255, 0.75)",
+          background: "#ffffff",
+          border: "1px solid rgba(139, 92, 246, 0.12)",
           boxShadow:
-            "0 20px 60px rgba(139, 92, 246, 0.08), 0 8px 24px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
-        }}
-        whileHover={{
-          background: "rgba(255, 255, 255, 1)",
+            "0 20px 60px rgba(139, 92, 246, 0.12), 0 8px 24px rgba(0, 0, 0, 0.06)",
         }}
       >
         {/* Top glow accent */}

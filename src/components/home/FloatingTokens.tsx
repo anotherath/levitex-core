@@ -11,6 +11,10 @@ const floatingTokens = [
   { symbol: "MATIC", color: "#8247e5", x: "92%", y: "45%", delay: 0.6, blur: 1.2, duration: 14.9 },
   { symbol: "AVAX", color: "#e84142", x: "20%", y: "85%", delay: 1.2, blur: 2.2, duration: 16.7 },
   { symbol: "LINK", color: "#2a5ada", x: "78%", y: "82%", delay: 0.2, blur: 1.6, duration: 15.2 },
+  { symbol: "UNI", color: "#ff007a", x: "25%", y: "35%", delay: 0.7, blur: 1.2, duration: 14.2 },
+  { symbol: "AAVE", color: "#b6509e", x: "72%", y: "32%", delay: 1.1, blur: 1.5, duration: 15.8 },
+  { symbol: "DAI", color: "#f5ac37", x: "18%", y: "55%", delay: 0.4, blur: 0.8, duration: 13.5 },
+  { symbol: "SNX", color: "#00d1ff", x: "76%", y: "58%", delay: 0.9, blur: 1.3, duration: 14.7 },
 ];
 
 export default function FloatingTokens() {
@@ -19,12 +23,12 @@ export default function FloatingTokens() {
       {floatingTokens.map((token) => (
         <motion.div
           key={token.symbol}
-          className="absolute pointer-events-auto cursor-default"
+          className="absolute pointer-events-auto cursor-pointer"
           style={{ left: token.x, top: token.y, filter: `blur(${token.blur}px)` }}
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: token.delay + 0.5, ease: "easeOut" }}
-          whileHover={{ filter: "blur(0px)", scale: 1.15, transition: { duration: 0.3 } }}
+          transition={{ duration: 0.3, delay: token.delay * 0.1, ease: "easeOut" }}
+          whileHover={{ filter: "blur(0px)", scale: 1.15, transition: { duration: 0.2 } }}
         >
           <motion.div
             animate={{

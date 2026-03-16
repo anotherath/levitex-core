@@ -85,7 +85,7 @@ function HeroSection() {
 
       {/* Hero Content */}
       <motion.div
-        className="relative z-20 text-center px-4 max-w-4xl mx-auto"
+        className="relative z-20 text-center px-4 max-w-4xl mx-auto pointer-events-none"
         style={{ opacity: heroOpacity, y: heroY }}
       >
         {/* Headline */}
@@ -111,7 +111,9 @@ function HeroSection() {
         </motion.p>
 
         {/* Swap Preview Card */}
-        <SwapPreviewCard />
+        <div className="pointer-events-auto inline-block w-full">
+          <SwapPreviewCard />
+        </div>
       </motion.div>
 
       {/* Scroll indicator */}

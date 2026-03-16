@@ -27,9 +27,9 @@ export default function Navbar() {
     <>
       <motion.nav
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
-        initial={{ y: -80 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <div
           className="mx-auto transition-all duration-500"

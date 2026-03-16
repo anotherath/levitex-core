@@ -15,13 +15,16 @@ export default function SwapPreviewCard() {
       try {
         const response = await fetch(
           "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd",
-        );
+        ).catch(() => null);
+        
+        if (!response || !response.ok) return;
+
         const data = await response.json();
         if (data.ethereum && data.ethereum.usd) {
           setEthPrice(data.ethereum.usd);
         }
       } catch (error) {
-        console.error("Failed to fetch ETH price:", error);
+        // Silently fail and use default price
       }
     };
 

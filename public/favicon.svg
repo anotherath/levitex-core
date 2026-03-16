@@ -1,0 +1,21 @@
+<svg width="64" height="64" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="white" strokeWidth="1.5" fill="none" strokeLinejoin="round" transform="rotate(36, 16, 16)">
+    <polygon points="16,16 16,4 27,11.5" />
+    <polygon points="16,16 27,11.5 23,24" />
+    <polygon points="16,16 23,24 9,24" />
+    <polygon points="16,16 9,24 5,11.5" />
+    <polygon points="16,16 5,11.5 16,4" />
+
+    <polygon points="16,4 27,11.5 24,2" />
+    <polygon points="27,11.5 23,24 30,17.5" />
+    <polygon points="23,24 9,24 16,30" />
+    <polygon points="9,24 5,11.5 2,17.5" />
+    <polygon points="5,11.5 16,4 8,2" />
+
+    <polygon points="8,2 24,2 16,4" />
+    <polygon points="24,2 30,17.5 27,11.5" />
+    <polygon points="30,17.5 16,30 23,24" />
+    <polygon points="16,30 2,17.5 9,24" />
+    <polygon points="2,17.5 8,2 5,11.5" />
+  </g>
+</svg>

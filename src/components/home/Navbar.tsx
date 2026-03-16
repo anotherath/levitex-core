@@ -42,10 +42,7 @@ export default function Navbar() {
               : "rgba(246, 248, 251, 0.5)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-            border: scrolled ? "1px solid rgba(255, 255, 255, 0.8)" : "none",
-            borderBottom: scrolled
-              ? "none"
-              : "1px solid rgba(139, 92, 246, 0.06)",
+
             boxShadow: scrolled
               ? "0 4px 30px rgba(139, 92, 246, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)"
               : "none",

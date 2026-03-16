@@ -1,9 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
 import SwapPreviewCard from "@/components/home/SwapPreviewCard";
 import FloatingTokens from "@/components/home/FloatingTokens";
 import FeaturesSection from "@/components/home/FeaturesSection";
@@ -23,6 +22,14 @@ const HeroScene = dynamic<any>(
 
 function HeroSection() {
   const heroRef = useRef(null);
+  const [showScene, setShowScene] = useState(false);
+
+  useEffect(() => {
+    // Delay heavy Three.js shader compilation so it doesn't block the main thread and stutter Framer Motion animations
+    const timer = setTimeout(() => setShowScene(true), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
@@ -72,7 +79,7 @@ function HeroSection() {
         className="absolute inset-0 z-0"
         style={{ opacity: sceneOpacity, scale: sceneScale }}
       >
-        <HeroScene />
+        {showScene && <HeroScene />}
       </motion.div>
 
       {/* Floating token chips */}
@@ -80,7 +87,7 @@ function HeroSection() {
         className="absolute inset-0 z-10"
         style={{ opacity: sceneOpacity }}
       >
-        <FloatingTokens />
+        {showScene && <FloatingTokens />}
       </motion.div>
 
       {/* Hero Content */}

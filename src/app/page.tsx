@@ -117,7 +117,15 @@ export default function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(0); // 1 for down, -1 for up
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const touchStart = useRef<number | null>(null);
+
+  useEffect(() => {
+    const checkViewport = () => setIsMobile(window.innerWidth < 1024);
+    checkViewport();
+    window.addEventListener("resize", checkViewport);
+    return () => window.removeEventListener("resize", checkViewport);
+  }, []);
 
   const sections = useMemo(
     () => [
@@ -144,7 +152,8 @@ export default function Home() {
   );
 
   const lastScrollTime = useRef(0);
-  const scrollCooldown = 1000; // ms
+  const scrollCooldown = isMobile ? 500 : 1000; // ms
+  const animationDuration = isMobile ? 0.4 : 0.8; // s
 
   const handleNext = useCallback(() => {
     const now = Date.now();
@@ -250,7 +259,7 @@ export default function Home() {
       opacity: 1,
       scale: 1,
       transition: {
-        duration: 0.8,
+        duration: animationDuration,
         ease: [0.22, 1, 0.36, 1],
       },
     },
@@ -259,7 +268,7 @@ export default function Home() {
       opacity: 0,
       scale: 0.95, // Subtle scale down when flying away
       transition: {
-        duration: 0.8,
+        duration: animationDuration,
         ease: [0.22, 1, 0.36, 1],
       },
     }),
@@ -285,7 +294,7 @@ export default function Home() {
                 zIndex: isActive ? 20 : 10,
               }}
               transition={{
-                duration: 0.8,
+                duration: animationDuration,
                 ease: [0.22, 1, 0.36, 1],
               }}
               onAnimationComplete={() => {

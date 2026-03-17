@@ -190,26 +190,27 @@ function FeatureCard({
   );
 }
 
-export default function FeaturesSection() {
+export default function FeaturesSection({ active }: { active?: boolean }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: false, margin: "-150px" });
+  const shouldAnimate = active || isInView;
 
   return (
     <section
       ref={ref}
-      className="relative min-h-screen flex flex-col justify-center py-20 md:py-28 lg:py-36 bg-linear-to-b from-(--bg-secondary) to-(--bg-primary)"
+      className="relative min-h-screen flex flex-col justify-center py-20 md:py-28 lg:py-36 bg-(--bg-primary)"
     >
       {/* Section header */}
       <motion.div
         className="section-container text-center mb-10 md:mb-16"
         initial={{ opacity: 0, y: 30 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-(--text-primary) mb-4">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#2d1b69] mb-4">
           How Levitex Moves <span className="gradient-text">Liquidity</span>
         </h2>
-        <p className="text-base md:text-lg text-(--text-secondary) max-w-2xl mx-auto mb-4">
+        <p className="text-base md:text-lg text-(--text-secondary) max-w-2xl mx-auto mb-4 font-light">
           A new paradigm in decentralized trading — fast, transparent, and
           designed to move freely.
         </p>
@@ -218,7 +219,7 @@ export default function FeaturesSection() {
       {/* Mobile: Horizontal scroll carousel with Reveal effect */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
       >
         <HorizontalScroll gap={12}>
@@ -226,7 +227,7 @@ export default function FeaturesSection() {
             <FeatureCard
               key={feature.title}
               feature={feature}
-              isInView={isInView}
+              isInView={shouldAnimate}
             />
           ))}
         </HorizontalScroll>
@@ -238,14 +239,14 @@ export default function FeaturesSection() {
           <motion.div
             key={feature.title}
             initial={{ opacity: 0, y: 50 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
             transition={{
               duration: 0.7,
               delay: index * 0.15 + 0.2,
               ease: [0.22, 1, 0.36, 1],
             }}
           >
-            <FeatureCard feature={feature} isInView={isInView} />
+            <FeatureCard feature={feature} isInView={shouldAnimate} />
           </motion.div>
         ))}
       </div>

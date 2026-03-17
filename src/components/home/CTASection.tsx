@@ -4,14 +4,15 @@ import { useRef } from "react";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 
-export default function CTASection() {
+export default function CTASection({ active }: { active?: boolean }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: false, margin: "-150px" });
+  const shouldAnimate = active || isInView;
 
   return (
     <section
       ref={ref}
-      className="relative min-h-screen flex flex-col justify-center py-32 lg:py-44 overflow-hidden bg-linear-to-b from-(--bg-secondary) via-[#eef1f8] to-(--bg-primary)"
+      className="relative min-h-screen flex flex-col justify-center py-32 lg:py-44 overflow-hidden bg-(--bg-primary)"
     >
       {/* Background orbs */}
       <div
@@ -64,22 +65,22 @@ export default function CTASection() {
       <div className="section-container relative z-10 text-center">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-(--text-primary) mb-6 leading-tight">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#2d1b69] mb-6 leading-tight">
             Let your assets{" "}
             <br className="hidden sm:block" />
             <span className="gradient-text">move freely.</span>
           </h2>
-          <p className="text-base md:text-lg text-(--text-secondary) max-w-xl mx-auto mb-10">
+          <p className="text-base md:text-lg text-(--text-secondary) max-w-xl mx-auto mb-10 font-light">
             Join a new generation of traders who believe in open, transparent,
             and frictionless decentralized finance.
           </p>
 
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            animate={shouldAnimate ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
             <Link href="/swap">
@@ -107,7 +108,7 @@ export default function CTASection() {
           <motion.div
             className="flex items-center justify-center gap-8 mt-14 flex-wrap"
             initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : {}}
+            animate={shouldAnimate ? { opacity: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.5 }}
           >
             {["Audited", "Non-Custodial", "Open Source", "Multi-chain"].map(

@@ -12,34 +12,43 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
+  const [isCompact, setIsCompact] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hideNav, setHideNav] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+    // 1. Lắng nghe sự kiện chuyển Section để co giãn Navbar
+    const handleSectionChange = (e: Event) => {
+      const activeIndex = (e as CustomEvent).detail;
+      // Index > 0 nghĩa là đã rời khỏi Hero Section
+      setIsCompact(activeIndex > 0);
     };
-    window.addEventListener("scroll", handleScroll);
 
-    // Observe footer to hide navbar
+    window.addEventListener(
+      "activeSection",
+      handleSectionChange as EventListener,
+    );
+
+    // 2. Observe footer để ẩn Navbar trên mobile
     const footer = document.querySelector("footer");
     let observer: IntersectionObserver;
 
     if (footer) {
       observer = new IntersectionObserver(
         ([entry]) => {
-          // Chỉ ẩn Nav trên điện thoại (mobile < 768px)
           const isMobile = window.innerWidth < 768;
           setHideNav(entry.isIntersecting && isMobile);
         },
-        { threshold: 0.1 }
+        { threshold: 0.1 },
       );
       observer.observe(footer);
     }
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener(
+        "activeSection",
+        handleSectionChange as EventListener,
+      );
       if (observer) observer.disconnect();
     };
   }, []);
@@ -48,29 +57,27 @@ export default function Navbar() {
     <>
       <motion.nav
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ 
-          opacity: hideNav ? 0 : 1, 
-          y: hideNav ? -80 : 0 
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: hideNav ? 0 : 1,
         }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <div
           className="mx-auto transition-all duration-500"
           style={{
-            maxWidth: scrolled ? "900px" : "100%",
-            margin: scrolled ? "12px auto" : "0 auto",
-            borderRadius: scrolled ? "20px" : "0",
-            background: scrolled
+            maxWidth: isCompact ? "900px" : "100%",
+            margin: isCompact ? "12px auto" : "0 auto",
+            borderRadius: isCompact ? "20px" : "0",
+            background: isCompact
               ? "rgba(255, 255, 255, 0.7)"
               : "rgba(246, 248, 251, 0.5)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-
-            boxShadow: scrolled
+            boxShadow: isCompact
               ? "0 4px 30px rgba(139, 92, 246, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)"
               : "none",
-            padding: scrolled ? "0 24px" : "0 32px",
+            padding: isCompact ? "0 24px" : "0 32px",
           }}
         >
           <div className="flex items-center justify-between h-16">
@@ -101,13 +108,11 @@ export default function Navbar() {
                     <polygon points="16,16 23,24 9,24" />
                     <polygon points="16,16 9,24 5,11.5" />
                     <polygon points="16,16 5,11.5 16,4" />
-
                     <polygon points="16,4 27,11.5 24,2" />
                     <polygon points="27,11.5 23,24 30,17.5" />
                     <polygon points="23,24 9,24 16,30" />
                     <polygon points="9,24 5,11.5 2,17.5" />
                     <polygon points="5,11.5 16,4 8,2" />
-
                     <polygon points="8,2 24,2 16,4" />
                     <polygon points="24,2 30,17.5 27,11.5" />
                     <polygon points="30,17.5 16,30 23,24" />
@@ -116,7 +121,6 @@ export default function Navbar() {
                   </g>
                 </svg>
               </div>
-
               <span className="text-md font-bold tracking-tight">LEVITEX</span>
             </Link>
 

@@ -251,7 +251,7 @@ function EcosystemCard({
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
-  const shouldAnimate = isInView && isCarouselActive && isTabVisible;
+  const shouldAnimate = (isInView || isCarouselActive) && isTabVisible;
 
   return (
     <div
@@ -297,25 +297,26 @@ function EcosystemCard({
   );
 }
 
-export default function EcosystemSection() {
+export default function EcosystemSection({ active }: { active?: boolean }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: false, margin: "-150px" });
+  const shouldAnimate = active || isInView;
 
   return (
     <section
       ref={ref}
-      className="relative min-h-screen flex flex-col justify-center py-20 md:py-28 lg:py-36 bg-linear-to-b from-(--bg-primary) to-(--bg-secondary)"
+      className="relative min-h-screen flex flex-col justify-center py-20 md:py-28 lg:py-36 bg-(--bg-primary)"
     >
       <motion.div
         className="section-container text-center mb-10 md:mb-16"
         initial={{ opacity: 0, y: 30 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-(--text-primary) mb-4">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#2d1b69] mb-4">
           Explore the <span className="gradient-text">Ecosystem</span>
         </h2>
-        <p className="text-base md:text-lg text-(--text-secondary) max-w-2xl mx-auto mb-4">
+        <p className="text-base md:text-lg text-(--text-secondary) max-w-2xl mx-auto mb-4 font-light">
           Everything you need to trade, earn, and build — all in one lightweight
           protocol.
         </p>
@@ -324,12 +325,12 @@ export default function EcosystemSection() {
       {/* Mobile & Tablet: Horizontal scroll carousel with Reveal effect */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
       >
         <HorizontalScroll gap={12}>
           {ecosystemItems.map((item) => (
-            <EcosystemCard key={item.title} item={item} isInView={isInView} />
+            <EcosystemCard key={item.title} item={item} isInView={shouldAnimate} />
           ))}
         </HorizontalScroll>
       </motion.div>
@@ -340,14 +341,14 @@ export default function EcosystemSection() {
           <motion.div
             key={item.title}
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
-            animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+            animate={shouldAnimate ? { opacity: 1, y: 0, scale: 1 } : {}}
             transition={{
               duration: 0.6,
               delay: index * 0.12 + 0.2,
               ease: [0.22, 1, 0.36, 1],
             }}
           >
-            <EcosystemCard item={item} isInView={isInView} />
+            <EcosystemCard item={item} isInView={shouldAnimate} />
           </motion.div>
         ))}
       </div>

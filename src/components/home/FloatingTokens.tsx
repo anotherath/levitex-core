@@ -121,9 +121,11 @@ export default function FloatingTokens() {
           }}
         >
           <motion.div
-            className="opacity-20 sm:opacity-30 md:opacity-45 lg:opacity-60 hover:opacity-100! transition-opacity duration-300"
-            whileHover={{ scale: 1.15 }}
+            initial={{ filter: "blur(4px)", opacity: 0.5 }}
+            animate={{ filter: "blur(4px)", opacity: 0.5 }}
+            whileHover={{ filter: "blur(0px)", opacity: 1, scale: 1.15 }}
             whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.3 }}
           >
             <motion.div
               animate={{

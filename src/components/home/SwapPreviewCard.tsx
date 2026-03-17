@@ -16,7 +16,7 @@ export default function SwapPreviewCard() {
         const response = await fetch(
           "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd",
         ).catch(() => null);
-        
+
         if (!response || !response.ok) return;
 
         const data = await response.json();
@@ -40,10 +40,31 @@ export default function SwapPreviewCard() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.9, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="animate-levitate-slow"
+      initial={{ 
+        opacity: 0, 
+        y: 40, 
+        rotate: 3 
+      }}
+      animate={{ 
+        opacity: 1, 
+        y: [0, -15, 0],
+        rotate: [3, 1.5, 3]
+      }}
+      transition={{ 
+        opacity: { duration: 1, delay: 0.4, ease: "easeOut" },
+        y: { 
+          duration: 6, 
+          repeat: Infinity, 
+          ease: "easeInOut" 
+        },
+        rotate: { 
+          duration: 7, 
+          repeat: Infinity, 
+          ease: "easeInOut" 
+        },
+        default: { duration: 0.9, delay: 0.4, ease: [0.22, 1, 0.36, 1] }
+      }}
+      className="relative z-10 origin-center"
     >
       <motion.div
         className="relative w-full max-w-[420px] mx-auto rounded-[28px] overflow-hidden transition-colors duration-300"
@@ -54,8 +75,6 @@ export default function SwapPreviewCard() {
             "0 20px 60px rgba(139, 92, 246, 0.12), 0 8px 24px rgba(0, 0, 0, 0.06)",
         }}
       >
-
-
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-5">

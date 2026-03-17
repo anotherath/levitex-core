@@ -3,10 +3,11 @@
 import { useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 
-export default function LiquiditySection() {
+export default function LiquiditySection({ active }: { active?: boolean }) {
   const ref = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isInView = useInView(ref, { once: false, margin: "-50px" });
+  const shouldAnimate = active || isInView;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -157,6 +158,13 @@ export default function LiquiditySection() {
     };
     document.addEventListener("visibilitychange", handleVisibility);
 
+    // React to 'active' prop change
+    if (active && !document.hidden) {
+      startLoop();
+    } else if (!active && !isIntersecting) {
+      stopLoop();
+    }
+
     return () => {
       stopLoop();
       observer.disconnect();
@@ -173,24 +181,24 @@ export default function LiquiditySection() {
       <motion.div
         className="section-container text-center mb-12"
         initial={{ opacity: 0, y: 30 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
 
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-(--text-primary) mb-4">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#2d1b69] mb-4">
           Liquidity in{" "}
           <span className="gradient-text">Motion</span>
         </h2>
-        <p className="text-base md:text-lg text-(--text-secondary) max-w-2xl mx-auto">
+        <p className="text-base md:text-lg text-(--text-secondary) max-w-2xl mx-auto font-light">
           Watch how liquidity flows through our protocol — dynamic, efficient,
-          and always in motion.
+          and <br className="hidden md:block" /> always in motion.
         </p>
       </motion.div>
 
       <motion.div
         className="relative w-full h-[300px] md:h-[400px]"
         initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
+        animate={shouldAnimate ? { opacity: 1 } : {}}
         transition={{ duration: 1, delay: 0.3 }}
       >
         <canvas

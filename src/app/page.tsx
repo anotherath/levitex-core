@@ -1,8 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import dynamic from "next/dynamic";
-import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useMotionValueEvent,
+  AnimatePresence,
+  Variants,
+} from "framer-motion";
 import SwapPreviewCard from "@/components/home/SwapPreviewCard";
 import FloatingTokens from "@/components/home/FloatingTokens";
 import FeaturesSection from "@/components/home/FeaturesSection";
@@ -10,7 +23,7 @@ import LiquiditySection from "@/components/home/LiquiditySection";
 import EcosystemSection from "@/components/home/EcosystemSection";
 import CTASection from "@/components/home/CTASection";
 import Footer from "@/components/home/Footer";
-import { useFullpageScroll } from "@/hooks/useFullpageScroll";
+import ScrollToTop from "@/components/ui/ScrollToTop";
 
 // Lazy load Three.js to avoid SSR issues
 const HeroScene = dynamic<{ active?: boolean }>(
@@ -22,9 +35,7 @@ const HeroScene = dynamic<{ active?: boolean }>(
 );
 
 function HeroSection() {
-  const heroRef = useRef(null);
   const [showScene, setShowScene] = useState(false);
-  const [heroActive, setHeroActive] = useState(true);
 
   useEffect(() => {
     // Delay heavy Three.js shader compilation so it doesn't block the main thread and stutter Framer Motion animations
@@ -32,31 +43,8 @@ function HeroSection() {
     return () => clearTimeout(timer);
   }, []);
 
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const heroY = useTransform(scrollYProgress, [0, 0.5], [0, -80]);
-  const sceneOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
-  const sceneScale = useTransform(scrollYProgress, [0, 0.6], [1, 0.95]);
-
-  // Track scroll progress — pause Three.js when hero is mostly scrolled away
-  useMotionValueEvent(scrollYProgress, "change", useCallback((latest: number) => {
-    // Deactivate when 70% scrolled past — scene is barely visible anyway
-    setHeroActive(latest < 0.7);
-  }, []));
-
   return (
-    <section
-      ref={heroRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(180deg, #f6f8fb 0%, #eef2f9 40%, #f1f4f9 100%)",
-      }}
-    >
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-(--bg-primary)">
       {/* Background orbs */}
       <div
         className="absolute top-[-15%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none animate-pulse-glow"
@@ -82,27 +70,18 @@ function HeroSection() {
         }}
       />
 
-      {/* Three.js Scene — paused when scrolled away */}
-      <motion.div
-        className="absolute inset-0 z-0"
-        style={{ opacity: sceneOpacity, scale: sceneScale }}
-      >
-        {showScene && <HeroScene active={heroActive} />}
-      </motion.div>
+      {/* Three.js Scene */}
+      <div className="absolute inset-0 z-0">
+        {showScene && <HeroScene active={true} />}
+      </div>
 
-      {/* Floating token chips — only show when hero is active */}
-      <motion.div
-        className="absolute inset-0 z-10"
-        style={{ opacity: sceneOpacity }}
-      >
-        {showScene && heroActive && <FloatingTokens />}
-      </motion.div>
+      {/* Floating token chips */}
+      <div className="absolute inset-0 z-10">
+        {showScene && <FloatingTokens />}
+      </div>
 
       {/* Hero Content */}
-      <motion.div
-        className="relative z-20 text-center px-4 max-w-4xl mx-auto pointer-events-none"
-        style={{ opacity: heroOpacity, y: heroY }}
-      >
+      <div className="relative z-20 text-center px-4 max-w-4xl mx-auto pointer-events-none">
         {/* Headline */}
         <motion.h1
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight text-[#2d1b69] mb-6"
@@ -129,53 +108,237 @@ function HeroSection() {
         <div className="pointer-events-auto inline-block w-full">
           <SwapPreviewCard />
         </div>
-      </motion.div>
-
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.6 }}
-        style={{ opacity: heroOpacity }}
-      >
-        <span className="text-[11px] font-medium text-(--text-tertiary) uppercase tracking-widest">
-          Scroll to explore
-        </span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            className="text-(--accent-violet)"
-          >
-            <path d="M12 5v14M5 12l7 7 7-7" />
-          </svg>
-        </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }
 
 export default function Home() {
-  const mainRef = useRef<HTMLElement>(null);
-  useFullpageScroll(mainRef);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [direction, setDirection] = useState(0); // 1 for down, -1 for up
+  const [isAnimating, setIsAnimating] = useState(false);
+  const touchStart = useRef<number | null>(null);
+
+  const sections = useMemo(
+    () => [
+      { id: "hero", component: (active: boolean) => <HeroSection /> }, // HeroSection doesn't need it as it's first
+      {
+        id: "features",
+        component: (active: boolean) => <FeaturesSection active={active} />,
+      },
+      {
+        id: "liquidity",
+        component: (active: boolean) => <LiquiditySection active={active} />,
+      },
+      {
+        id: "ecosystem",
+        component: (active: boolean) => <EcosystemSection active={active} />,
+      },
+      {
+        id: "cta",
+        component: (active: boolean) => <CTASection active={active} />,
+      },
+      { id: "footer", component: (active: boolean) => <Footer /> },
+    ],
+    [],
+  );
+
+  const lastScrollTime = useRef(0);
+  const scrollCooldown = 1000; // ms
+
+  const handleNext = useCallback(() => {
+    const now = Date.now();
+    if (
+      isAnimating ||
+      activeIndex >= sections.length - 1 ||
+      now - lastScrollTime.current < scrollCooldown
+    )
+      return;
+
+    lastScrollTime.current = now;
+    setDirection(1);
+    setIsAnimating(true);
+    setActiveIndex((prev) => prev + 1);
+  }, [activeIndex, isAnimating, sections.length]);
+
+  const handlePrev = useCallback(() => {
+    const now = Date.now();
+    if (
+      isAnimating ||
+      activeIndex <= 0 ||
+      now - lastScrollTime.current < scrollCooldown
+    )
+      return;
+
+    lastScrollTime.current = now;
+    setDirection(-1);
+    setIsAnimating(true);
+    setActiveIndex((prev) => prev - 1);
+  }, [activeIndex, isAnimating]);
+
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (isAnimating) return;
+
+      // Touchpads send many small events. Threshold 40 helps filter jitters.
+      if (Math.abs(e.deltaY) < 40) return;
+
+      if (e.deltaY > 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isAnimating) return;
+      if (e.key === "ArrowDown" || e.key === "PageDown") {
+        handleNext();
+      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+        handlePrev();
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStart.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (isAnimating || touchStart.current === null) return;
+      const touchEnd = e.changedTouches[0].clientY;
+      const diff = touchStart.current - touchEnd;
+
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          handleNext();
+        } else {
+          handlePrev();
+        }
+      }
+      touchStart.current = null;
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: false }); // Set passive false to potentially prevent default if needed
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [handleNext, handlePrev, isAnimating]);
+
+  useEffect(() => {
+    // Notify components (like Navbar) about the current active section
+    window.dispatchEvent(
+      new CustomEvent("activeSection", { detail: activeIndex }),
+    );
+  }, [activeIndex]);
+
+  // Variants for the section transitions
+  const variants: Variants = {
+    initial: (direction: number) => ({
+      y: direction > 0 ? "100%" : "-100%",
+      opacity: 0,
+      scale: 1,
+    }),
+    animate: {
+      y: 0,
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+    exit: (direction: number) => ({
+      y: direction > 0 ? "-100%" : "100%",
+      opacity: 0,
+      scale: 0.95, // Subtle scale down when flying away
+      transition: {
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    }),
+  };
 
   return (
-    <main ref={mainRef} className="min-h-screen overflow-x-hidden snap-y snap-proximity scroll-smooth">
-      <div className="snap-center"><HeroSection /></div>
-      <div className="snap-center"><FeaturesSection /></div>
-      <div className="snap-center"><LiquiditySection /></div>
-      <div className="snap-center"><EcosystemSection /></div>
-      <div className="snap-center"><CTASection /></div>
-      <div className="snap-start"><Footer /></div>
+    <main className="fixed inset-0 h-screen w-full overflow-hidden bg-[#f6f8fb]">
+      <div className="relative w-full h-full">
+        {sections.map((section, index) => {
+          const isActive = index === activeIndex;
+          const isPast = index < activeIndex;
+          const isFuture = index > activeIndex;
+
+          return (
+            <motion.div
+              key={section.id}
+              className="absolute inset-0 w-full h-full overflow-hidden"
+              initial={false}
+              animate={{
+                y: isActive ? "0%" : isPast ? "-100%" : "100%",
+                opacity: isActive ? 1 : 0,
+                scale: isActive ? 1 : isPast ? 0.95 : 1,
+                zIndex: isActive ? 20 : 10,
+              }}
+              transition={{
+                duration: 0.8,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              onAnimationComplete={() => {
+                if (isActive) setIsAnimating(false);
+              }}
+              style={{
+                pointerEvents: isActive ? "auto" : "none",
+                visibility:
+                  isActive || Math.abs(index - activeIndex) <= 1
+                    ? "visible"
+                    : "hidden",
+              }}
+            >
+              {section.component(isActive)}
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Vertical Navigation Dots */}
+      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
+        {sections.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => {
+              if (isAnimating || i === activeIndex) return;
+              setDirection(i > activeIndex ? 1 : -1);
+              setIsAnimating(true);
+              setActiveIndex(i);
+            }}
+            className="group relative flex items-center justify-end p-2 focus:outline-hidden"
+            aria-label={`Go to section ${i + 1}`}
+          >
+            <span
+              className={`w-2 rounded-full transition-all duration-300 ${
+                i === activeIndex
+                  ? "bg-[#6366f1] h-8"
+                  : "bg-gray-400 h-2 opacity-50 group-hover:opacity-100"
+              }`}
+            />
+          </button>
+        ))}
+      </div>
+
+      <ScrollToTop
+        forceVisible={activeIndex > 0}
+        onClick={() => {
+          if (isAnimating) return;
+          setDirection(-1);
+          setIsAnimating(true);
+          setActiveIndex(0);
+        }}
+      />
     </main>
   );
 }

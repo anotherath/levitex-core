@@ -6,7 +6,7 @@ import { motion, useInView } from "framer-motion";
 export default function LiquiditySection({ active }: { active?: boolean }) {
   const ref = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-50px" });
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
   const shouldAnimate = active || isInView;
 
   useEffect(() => {
@@ -174,7 +174,7 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
       <motion.div
         className="section-container text-center mb-12"
         initial={{ opacity: 0, y: 30 }}
-        animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       >
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#2d1b69] mb-4">
@@ -189,7 +189,7 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
       <motion.div
         className="relative w-full h-[300px] md:h-[400px]"
         initial={{ opacity: 0 }}
-        animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       >
         <canvas

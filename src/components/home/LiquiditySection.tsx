@@ -1,13 +1,12 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 
 export default function LiquiditySection() {
   const ref = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isInView = useInView(ref, { once: false, margin: "-50px" });
-  const [, setTick] = useState(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -17,7 +16,8 @@ export default function LiquiditySection() {
     if (!ctx) return;
 
     let animationId: number;
-    const dpr = Math.min(window.devicePixelRatio, 2);
+    let isRunning = false;
+    const dpr = Math.min(window.devicePixelRatio, 1.5); // Capped like HeroScene
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -40,6 +40,10 @@ export default function LiquiditySection() {
     let time = 0;
 
     const draw = () => {
+      if (!isRunning) return; // Don't schedule next frame if paused
+
+      animationId = requestAnimationFrame(draw);
+
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
@@ -52,7 +56,8 @@ export default function LiquiditySection() {
         ctx.beginPath();
         ctx.moveTo(0, centerY + wave.offset);
 
-        for (let x = 0; x <= w; x += 2) {
+        // Step by 3px instead of 2px — 33% less path computation
+        for (let x = 0; x <= w; x += 3) {
           const y =
             centerY +
             wave.offset +
@@ -74,7 +79,7 @@ export default function LiquiditySection() {
         // Draw the line on top
         ctx.beginPath();
         ctx.moveTo(0, centerY + wave.offset);
-        for (let x = 0; x <= w; x += 2) {
+        for (let x = 0; x <= w; x += 3) {
           const y =
             centerY +
             wave.offset +
@@ -87,10 +92,10 @@ export default function LiquiditySection() {
         ctx.stroke();
       }
 
-      // Flowing particles along waves
-      for (let i = 0; i < 15; i++) {
+      // Flowing particles along waves — reduced from 15 → 10
+      for (let i = 0; i < 10; i++) {
         const wave = waves[i % waves.length];
-        const px = ((time * 40 + i * 120) % w);
+        const px = (time * 40 + i * 120) % w;
         const py =
           centerY +
           wave.offset +
@@ -112,18 +117,51 @@ export default function LiquiditySection() {
       }
 
       time += 0.016;
-      animationId = requestAnimationFrame(draw);
     };
 
-    draw();
+    // Start/stop based on visibility
+    const startLoop = () => {
+      if (!isRunning) {
+        isRunning = true;
+        draw();
+      }
+    };
+    const stopLoop = () => {
+      isRunning = false;
+      cancelAnimationFrame(animationId);
+    };
 
-    // Force re-render for view tracking
-    const interval = setInterval(() => setTick((t) => t + 1), 1000);
+    let isIntersecting = false;
+
+    // Observe visibility in viewport
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isIntersecting = entry.isIntersecting;
+        if (isIntersecting && !document.hidden) {
+          startLoop();
+        } else {
+          stopLoop();
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(canvas);
+
+    // Also pause when tab is hidden and resume when visible
+    const handleVisibility = () => {
+      if (document.hidden) {
+        stopLoop();
+      } else if (isIntersecting) {
+        startLoop();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      cancelAnimationFrame(animationId);
+      stopLoop();
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("resize", resize);
-      clearInterval(interval);
     };
   }, []);
 

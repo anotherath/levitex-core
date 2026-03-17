@@ -33,9 +33,9 @@ export function useFullpageScroll(containerRef: React.RefObject<HTMLElement | nu
     const container = containerRef.current;
     if (!container) return;
 
-    // Gather all direct section children
+    // Gather all direct children (which are now snap-start containers)
     const sections = Array.from(
-      container.querySelectorAll<HTMLElement>(":scope > section, :scope > footer")
+      container.querySelectorAll<HTMLElement>(":scope > *")
     );
 
     // If no footer found in container, look for a global footer

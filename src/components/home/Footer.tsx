@@ -26,19 +26,19 @@ const footerLinks = {
 export default function Footer() {
   return (
     <footer
-      className="relative pt-16 pb-8"
+      className="relative w-full overflow-hidden snap-start"
       style={{
         background: "var(--bg-primary)",
-        borderTop: "1px solid rgba(139, 92, 246, 0.06)",
+        borderTop: "1px solid rgba(139, 92, 246, 0.08)",
       }}
     >
       <div className="section-container">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-          {/* Brand */}
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 mb-16">
+          {/* Brand Section */}
+          <div className="lg:col-span-2">
             <Link
               href="/"
-              className="flex items-center gap-1 mb-4 group w-fit text-[#2d1b69]"
+              className="flex items-center gap-1 my-6 group w-fit text-[#2d1b69]"
             >
               <div className="relative flex items-center justify-center w-9 h-8">
                 <svg
@@ -78,26 +78,68 @@ export default function Footer() {
                 </svg>
               </div>
 
-              <span className="text-md font-bold tracking-tight">LEVITEX</span>
+              <span className="text-xl font-bold tracking-tight">LEVITEX</span>
             </Link>
-            <p className="text-sm text-(--text-tertiary) leading-relaxed max-w-xs">
-              A lighter, faster way to explore decentralized liquidity. Trade
-              assets that move as freely as you do.
+            <p className="text-base text-(--text-secondary) leading-relaxed max-w-sm">
+              A lighter, faster way to explore decentralized liquidity. Built
+              for the next generation of frictionless DeFi.
             </p>
           </div>
 
-          {/* Links */}
-          {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category}>
-              <h4 className="text-sm font-semibold text-(--text-primary) mb-4 uppercase tracking-wider">
-                {category}
+          {/* Links Sections - Arranged as requested 2x2 grid feel */}
+          <div className="lg:col-span-3 grid grid-cols-2 gap-10">
+            {/* Column 1: Protocol & Community */}
+            <div className="flex flex-col gap-16">
+              {/* Protocol */}
+              <div>
+                <h4 className="text-sm font-bold text-[#1a1d2e] mb-6 uppercase tracking-widest">
+                  Protocol
+                </h4>
+                <ul className="space-y-4">
+                  {footerLinks.Protocol.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="text-sm text-[#5c6178] hover:text-(--accent-violet) transition-colors duration-200"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Community */}
+              <div>
+                <h4 className="text-sm font-bold text-[#1a1d2e] mb-6 uppercase tracking-widest">
+                  Community
+                </h4>
+                <ul className="space-y-4">
+                  {footerLinks.Community.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="text-sm text-[#5c6178] hover:text-(--accent-violet) transition-colors duration-200"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Column 2: Resources */}
+            <div>
+              <h4 className="text-sm font-bold text-[#1a1d2e] mb-6 uppercase tracking-widest">
+                Resources
               </h4>
-              <ul className="space-y-2.5">
-                {links.map((link) => (
+              <ul className="space-y-4">
+                {footerLinks.Resources.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-(--text-tertiary) hover:text-(--accent-violet) transition-colors duration-200"
+                      className="text-sm text-[#5c6178] hover:text-(--accent-violet) transition-colors duration-200"
                     >
                       {link.label}
                     </Link>
@@ -105,12 +147,12 @@ export default function Footer() {
                 ))}
               </ul>
             </div>
-          ))}
+          </div>
         </div>
 
         {/* Bottom bar */}
         <div
-          className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+          className="py-6 flex flex-col sm:flex-row items-center justify-between gap-4"
           style={{ borderTop: "1px solid rgba(139, 92, 246, 0.06)" }}
         >
           <p className="text-xs text-(--text-tertiary)">

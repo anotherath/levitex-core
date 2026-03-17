@@ -6,7 +6,7 @@ import { motion, useInView } from "framer-motion";
 
 export default function CTASection() {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: false, margin: "-150px" });
 
   return (
     <section
@@ -38,31 +38,16 @@ export default function CTASection() {
         }}
       />
 
-      {/* Floating geometric shapes */}
-      <motion.div
-        className="absolute top-16 left-[10%] w-8 h-8 border border-[rgba(139,92,246,0.2)] rounded-lg pointer-events-none"
-        animate={{
-          y: [0, -20, 0],
-          rotate: [0, 45, 0],
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      {/* Floating geometric shapes — CSS-driven instead of JS-driven */}
+      <div
+        className="absolute top-16 left-[10%] w-8 h-8 border border-[rgba(139,92,246,0.2)] rounded-lg pointer-events-none animate-levitate"
       />
-      <motion.div
-        className="absolute bottom-20 right-[12%] w-6 h-6 rounded-full pointer-events-none"
+      <div
+        className="absolute bottom-20 right-[12%] w-6 h-6 rounded-full pointer-events-none animate-levitate-reverse"
         style={{ background: "rgba(56, 189, 248, 0.15)" }}
-        animate={{
-          y: [0, -15, 0],
-          x: [0, 10, 0],
-        }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
-      <motion.div
-        className="absolute top-1/3 right-[20%] w-10 h-10 pointer-events-none"
-        animate={{
-          y: [0, -12, 0],
-          rotate: [0, 180, 360],
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+      <div
+        className="absolute top-1/3 right-[20%] w-10 h-10 pointer-events-none animate-spin-slow"
       >
         <svg viewBox="0 0 40 40" fill="none">
           <circle
@@ -73,7 +58,7 @@ export default function CTASection() {
             strokeWidth="1.5"
           />
         </svg>
-      </motion.div>
+      </div>
 
       {/* Content */}
       <div className="section-container relative z-10 text-center">

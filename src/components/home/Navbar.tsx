@@ -14,22 +14,46 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [hideNav, setHideNav] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // Observe footer to hide navbar
+    const footer = document.querySelector("footer");
+    let observer: IntersectionObserver;
+
+    if (footer) {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          // Chỉ ẩn Nav trên điện thoại (mobile < 768px)
+          const isMobile = window.innerWidth < 768;
+          setHideNav(entry.isIntersecting && isMobile);
+        },
+        { threshold: 0.1 }
+      );
+      observer.observe(footer);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (observer) observer.disconnect();
+    };
   }, []);
 
   return (
     <>
       <motion.nav
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ 
+          opacity: hideNav ? 0 : 1, 
+          y: hideNav ? -80 : 0 
+        }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <div
           className="mx-auto transition-all duration-500"

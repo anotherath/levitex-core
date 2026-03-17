@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
 
 interface FloatingObject {
@@ -12,9 +12,114 @@ interface FloatingObject {
   rotationSpeed: THREE.Vector3;
 }
 
-export default function HeroScene() {
+interface HeroSceneProps {
+  /** When false the RAF loop is paused — no GPU/CPU work at all */
+  active?: boolean;
+}
+
+export default function HeroScene({ active = true }: HeroSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>(0);
+  const isActiveRef = useRef(active);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const sceneDataRef = useRef<{
+    scene: THREE.Scene;
+    camera: THREE.PerspectiveCamera;
+    floatingObjects: FloatingObject[];
+    particleGeometry: THREE.BufferGeometry;
+    particleCount: number;
+    clock: THREE.Clock;
+    fadeInDone: boolean;
+  } | null>(null);
+
+  // Keep ref in sync with prop so the animate closure sees changes
+  useEffect(() => {
+    isActiveRef.current = active;
+  }, [active]);
+
+  // Pause when browser tab is hidden (background tab = wasted GPU)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        isActiveRef.current = false;
+      } else {
+        isActiveRef.current = active;
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
+  }, [active]);
+
+  const animate = useCallback(() => {
+    animationRef.current = requestAnimationFrame(animate);
+
+    // Skip all GPU work when paused
+    if (!isActiveRef.current) return;
+
+    const data = sceneDataRef.current;
+    const renderer = rendererRef.current;
+    if (!data || !renderer) return;
+
+    const { scene, camera, floatingObjects, particleGeometry, particleCount, clock } = data;
+    const elapsed = clock.getElapsedTime();
+
+    // Fade-in logic — runs only during the first 1.5s, then never again
+    if (!data.fadeInDone) {
+      const fadeInFactor = Math.min(elapsed / 1.5, 1.0);
+      scene.traverse((child) => {
+        const mesh = child as THREE.Mesh | THREE.Points | THREE.LineSegments;
+        if (mesh.material) {
+          const materials = Array.isArray(mesh.material)
+            ? mesh.material
+            : [mesh.material];
+          materials.forEach((mat) => {
+            if (mat.userData.originalOpacity === undefined) {
+              mat.userData.originalOpacity = mat.opacity;
+            }
+            mat.opacity = mat.userData.originalOpacity * fadeInFactor;
+          });
+        }
+      });
+      if (fadeInFactor >= 1.0) {
+        data.fadeInDone = true;
+      }
+    }
+
+    // Animate floating objects
+    for (const obj of floatingObjects) {
+      const { mesh, basePosition, speed, amplitude, phase, rotationSpeed } =
+        obj;
+
+      mesh.position.x =
+        basePosition.x +
+        Math.sin(elapsed * speed + phase) * amplitude * 0.5;
+      mesh.position.y =
+        basePosition.y +
+        Math.cos(elapsed * speed * 0.8 + phase) * amplitude;
+      mesh.position.z =
+        basePosition.z +
+        Math.sin(elapsed * speed * 0.3 + phase) * amplitude * 0.3;
+
+      mesh.rotation.x += rotationSpeed.x;
+      mesh.rotation.y += rotationSpeed.y;
+      mesh.rotation.z += rotationSpeed.z;
+    }
+
+    // Animate particles
+    const particlePositions = particleGeometry.attributes.position
+      .array as Float32Array;
+    for (let i = 0; i < particleCount; i++) {
+      particlePositions[i * 3 + 1] +=
+        Math.sin(elapsed * 0.5 + i * 0.1) * 0.003;
+      particlePositions[i * 3] +=
+        Math.cos(elapsed * 0.3 + i * 0.05) * 0.002;
+    }
+    particleGeometry.attributes.position.needsUpdate = true;
+
+    camera.lookAt(0, 0, 0);
+    renderer.render(scene, camera);
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -30,12 +135,15 @@ export default function HeroScene() {
 
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
-      antialias: true,
+      antialias: false, // Turned off — huge GPU saving, barely visible difference
+      powerPreference: "low-power", // Prefer integrated GPU on laptops
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Cap pixel ratio at 1.5 to reduce fragment shader workload
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
 
     // Color palette
     const colors = [
@@ -78,7 +186,9 @@ export default function HeroScene() {
           posAttr.getZ(i)
         );
         // Deduplicate vertices
-        const isDuplicate = uniqueVertices.some((uv) => uv.distanceTo(v) < 0.01);
+        const isDuplicate = uniqueVertices.some(
+          (uv) => uv.distanceTo(v) < 0.01
+        );
         if (!isDuplicate) uniqueVertices.push(v);
       }
 
@@ -89,7 +199,10 @@ export default function HeroScene() {
         dotPositions[i * 3 + 1] = v.y;
         dotPositions[i * 3 + 2] = v.z;
       });
-      dotGeometry.setAttribute("position", new THREE.BufferAttribute(dotPositions, 3));
+      dotGeometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(dotPositions, 3)
+      );
 
       const dotMaterial = new THREE.PointsMaterial({
         color,
@@ -105,31 +218,18 @@ export default function HeroScene() {
     };
 
     // --- Zone-based positioning to avoid center ---
-    // Each zone targets a specific edge/corner of the screen
     const zones = [
-      // Top-left
       { xMin: -28, xMax: -14, yMin: 8, yMax: 18 },
-      // Top-right
       { xMin: 14, xMax: 28, yMin: 8, yMax: 18 },
-      // Bottom-left
       { xMin: -28, xMax: -14, yMin: -18, yMax: -8 },
-      // Bottom-right
       { xMin: 14, xMax: 28, yMin: -18, yMax: -8 },
-      // Left edge (mid)
       { xMin: -30, xMax: -16, yMin: -6, yMax: 6 },
-      // Right edge (mid)
       { xMin: 16, xMax: 30, yMin: -6, yMax: 6 },
-      // Top center (above headline)
       { xMin: -8, xMax: 8, yMin: 14, yMax: 22 },
-      // Bottom edge
       { xMin: -10, xMax: 10, yMin: -20, yMax: -12 },
-      // Far top-left
       { xMin: -32, xMax: -20, yMin: 14, yMax: 22 },
-      // Far top-right
       { xMin: 20, xMax: 32, yMin: 14, yMax: 22 },
-      // Far bottom-left
       { xMin: -32, xMax: -20, yMin: -22, yMax: -14 },
-      // Far bottom-right
       { xMin: 20, xMax: 32, yMin: -22, yMax: -14 },
     ];
 
@@ -179,7 +279,12 @@ export default function HeroScene() {
       const color = colors[i % colors.length];
       const opacity = 0.3 + Math.random() * 0.25;
       const group = createWireframePolyhedron(geometry, color, opacity);
-      addObject(group, i, 0.2 + Math.random() * 0.35, 1.0 + Math.random() * 1.8);
+      addObject(
+        group,
+        i,
+        0.2 + Math.random() * 0.35,
+        1.0 + Math.random() * 1.8
+      );
     }
 
     // 2. Wireframe Dodecahedrons — edges
@@ -189,7 +294,12 @@ export default function HeroScene() {
       const color = colors[(i + 2) % colors.length];
       const opacity = 0.25 + Math.random() * 0.2;
       const group = createWireframePolyhedron(geometry, color, opacity);
-      addObject(group, i + 4, 0.15 + Math.random() * 0.3, 0.8 + Math.random() * 1.5);
+      addObject(
+        group,
+        i + 4,
+        0.15 + Math.random() * 0.3,
+        0.8 + Math.random() * 1.5
+      );
     }
 
     // 3. Wireframe Octahedrons — far corners
@@ -199,25 +309,31 @@ export default function HeroScene() {
       const color = colors[(i + 4) % colors.length];
       const opacity = 0.3 + Math.random() * 0.2;
       const group = createWireframePolyhedron(geometry, color, opacity);
-      addObject(group, i + 8, 0.2 + Math.random() * 0.4, 1.0 + Math.random() * 1.6);
+      addObject(
+        group,
+        i + 8,
+        0.2 + Math.random() * 0.4,
+        1.0 + Math.random() * 1.6
+      );
     }
 
-    // 4. Translucent spheres — scattered at edges
+    // 4. Translucent spheres — use cheaper MeshBasicMaterial instead of MeshPhysicalMaterial
     for (let i = 0; i < 4; i++) {
       const radius = 0.5 + Math.random() * 1.0;
-      const geometry = new THREE.SphereGeometry(radius, 32, 32);
-      const material = new THREE.MeshPhysicalMaterial({
+      const geometry = new THREE.SphereGeometry(radius, 16, 16); // Reduced segments: 32→16
+      const material = new THREE.MeshBasicMaterial({
         color: colors[(i + 1) % colors.length],
         transparent: true,
         opacity: 0.12 + Math.random() * 0.14,
-        roughness: 0.1,
-        metalness: 0.1,
-        clearcoat: 1,
-        clearcoatRoughness: 0.1,
-        side: THREE.DoubleSide,
+        side: THREE.FrontSide, // No need for DoubleSide on spheres
       });
       const mesh = new THREE.Mesh(geometry, material);
-      addObject(mesh, (i + 3) % zones.length, 0.3 + Math.random() * 0.5, 1 + Math.random() * 2);
+      addObject(
+        mesh,
+        (i + 3) % zones.length,
+        0.3 + Math.random() * 0.5,
+        1 + Math.random() * 2
+      );
     }
 
     // 5. Wireframe Tetrahedrons — dispersed
@@ -227,11 +343,16 @@ export default function HeroScene() {
       const color = colors[(i + 5) % colors.length];
       const opacity = 0.28 + Math.random() * 0.22;
       const group = createWireframePolyhedron(geometry, color, opacity);
-      addObject(group, (i + 6) % zones.length, 0.18 + Math.random() * 0.35, 1.0 + Math.random() * 1.5);
+      addObject(
+        group,
+        (i + 6) % zones.length,
+        0.18 + Math.random() * 0.35,
+        1.0 + Math.random() * 1.5
+      );
     }
 
-    // 6. Glowing particles
-    const particleCount = 150;
+    // 6. Glowing particles — reduced from 150 → 80
+    const particleCount = 80;
     const particleGeometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const particleColors = new Float32Array(particleCount * 3);
@@ -268,76 +389,31 @@ export default function HeroScene() {
     const particles = new THREE.Points(particleGeometry, particleMaterial);
     scene.add(particles);
 
-    // Lighting
+    // Lighting — simplified: removed 1 point light, lowered reach
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    const pointLight1 = new THREE.PointLight(0x8b5cf6, 2, 50);
+    const pointLight1 = new THREE.PointLight(0x8b5cf6, 2, 40);
     pointLight1.position.set(10, 10, 10);
     scene.add(pointLight1);
 
-    const pointLight2 = new THREE.PointLight(0x38bdf8, 2, 50);
+    const pointLight2 = new THREE.PointLight(0x38bdf8, 2, 40);
     pointLight2.position.set(-10, -10, 10);
     scene.add(pointLight2);
 
-    const pointLight3 = new THREE.PointLight(0x34d399, 1.5, 40);
-    pointLight3.position.set(0, 15, 5);
-    scene.add(pointLight3);
-
-    // Animation loop
+    // Store scene data for the animate loop
     const clock = new THREE.Clock();
-
-    const animate = () => {
-      animationRef.current = requestAnimationFrame(animate);
-      const elapsed = clock.getElapsedTime();
-
-      // Fade in logic — objects gradually appear over 1.5s
-      const fadeInFactor = Math.min(elapsed / 1.5, 1.0);
-      scene.traverse((child) => {
-        const mesh = child as THREE.Mesh | THREE.Points | THREE.LineSegments;
-        if (mesh.material) {
-          const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-          materials.forEach((mat) => {
-            if (mat.userData.originalOpacity === undefined) {
-              mat.userData.originalOpacity = mat.opacity;
-            }
-            mat.opacity = mat.userData.originalOpacity * fadeInFactor;
-          });
-        }
-      });
-
-      // Animate floating objects
-      for (const obj of floatingObjects) {
-        const { mesh, basePosition, speed, amplitude, phase, rotationSpeed } = obj;
-
-        mesh.position.x =
-          basePosition.x +
-          Math.sin(elapsed * speed + phase) * amplitude * 0.5;
-        mesh.position.y =
-          basePosition.y +
-          Math.cos(elapsed * speed * 0.8 + phase) * amplitude;
-        mesh.position.z =
-          basePosition.z +
-          Math.sin(elapsed * speed * 0.3 + phase) * amplitude * 0.3;
-
-        mesh.rotation.x += rotationSpeed.x;
-        mesh.rotation.y += rotationSpeed.y;
-        mesh.rotation.z += rotationSpeed.z;
-      }
-
-      // Animate particles
-      const particlePositions = particleGeometry.attributes.position.array as Float32Array;
-      for (let i = 0; i < particleCount; i++) {
-        particlePositions[i * 3 + 1] += Math.sin(elapsed * 0.5 + i * 0.1) * 0.003;
-        particlePositions[i * 3] += Math.cos(elapsed * 0.3 + i * 0.05) * 0.002;
-      }
-      particleGeometry.attributes.position.needsUpdate = true;
-
-      camera.lookAt(0, 0, 0);
-
-      renderer.render(scene, camera);
+    sceneDataRef.current = {
+      scene,
+      camera,
+      floatingObjects,
+      particleGeometry,
+      particleCount,
+      clock,
+      fadeInDone: false,
     };
 
+    // Start animation
     animate();
 
     // Handle resize
@@ -353,12 +429,27 @@ export default function HeroScene() {
     return () => {
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationRef.current);
+
+      // Thorough disposal to free GPU memory
+      scene.traverse((child) => {
+        const obj = child as THREE.Mesh;
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          const materials = Array.isArray(obj.material)
+            ? obj.material
+            : [obj.material];
+          materials.forEach((m) => m.dispose());
+        }
+      });
       renderer.dispose();
+      rendererRef.current = null;
+      sceneDataRef.current = null;
+
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, [animate]);
 
   return <div ref={containerRef} className="three-canvas-container" />;
 }

@@ -1,18 +1,19 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
 import SwapPreviewCard from "@/components/home/SwapPreviewCard";
 import FloatingTokens from "@/components/home/FloatingTokens";
 import FeaturesSection from "@/components/home/FeaturesSection";
 import LiquiditySection from "@/components/home/LiquiditySection";
 import EcosystemSection from "@/components/home/EcosystemSection";
 import CTASection from "@/components/home/CTASection";
+import Footer from "@/components/home/Footer";
 import { useFullpageScroll } from "@/hooks/useFullpageScroll";
 
 // Lazy load Three.js to avoid SSR issues
-const HeroScene = dynamic<any>(
+const HeroScene = dynamic<{ active?: boolean }>(
   () => import("@/components/home/HeroScene").then((mod) => mod.default),
   {
     ssr: false,
@@ -23,6 +24,7 @@ const HeroScene = dynamic<any>(
 function HeroSection() {
   const heroRef = useRef(null);
   const [showScene, setShowScene] = useState(false);
+  const [heroActive, setHeroActive] = useState(true);
 
   useEffect(() => {
     // Delay heavy Three.js shader compilation so it doesn't block the main thread and stutter Framer Motion animations
@@ -39,6 +41,12 @@ function HeroSection() {
   const heroY = useTransform(scrollYProgress, [0, 0.5], [0, -80]);
   const sceneOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
   const sceneScale = useTransform(scrollYProgress, [0, 0.6], [1, 0.95]);
+
+  // Track scroll progress — pause Three.js when hero is mostly scrolled away
+  useMotionValueEvent(scrollYProgress, "change", useCallback((latest: number) => {
+    // Deactivate when 70% scrolled past — scene is barely visible anyway
+    setHeroActive(latest < 0.7);
+  }, []));
 
   return (
     <section
@@ -74,20 +82,20 @@ function HeroSection() {
         }}
       />
 
-      {/* Three.js Scene */}
+      {/* Three.js Scene — paused when scrolled away */}
       <motion.div
         className="absolute inset-0 z-0"
         style={{ opacity: sceneOpacity, scale: sceneScale }}
       >
-        {showScene && <HeroScene />}
+        {showScene && <HeroScene active={heroActive} />}
       </motion.div>
 
-      {/* Floating token chips */}
+      {/* Floating token chips — only show when hero is active */}
       <motion.div
         className="absolute inset-0 z-10"
         style={{ opacity: sceneOpacity }}
       >
-        {showScene && <FloatingTokens />}
+        {showScene && heroActive && <FloatingTokens />}
       </motion.div>
 
       {/* Hero Content */}
@@ -161,12 +169,13 @@ export default function Home() {
   useFullpageScroll(mainRef);
 
   return (
-    <main ref={mainRef} className="min-h-screen overflow-x-hidden">
-      <HeroSection />
-      <FeaturesSection />
-      <LiquiditySection />
-      <EcosystemSection />
-      <CTASection />
+    <main ref={mainRef} className="min-h-screen overflow-x-hidden snap-y snap-proximity scroll-smooth">
+      <div className="snap-start"><HeroSection /></div>
+      <div className="snap-start"><FeaturesSection /></div>
+      <div className="snap-start"><LiquiditySection /></div>
+      <div className="snap-start"><EcosystemSection /></div>
+      <div className="snap-start"><CTASection /></div>
+      <div className="snap-start"><Footer /></div>
     </main>
   );
 }

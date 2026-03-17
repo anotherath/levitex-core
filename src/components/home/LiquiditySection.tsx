@@ -18,10 +18,11 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
 
     let animationId: number;
     let isRunning = false;
-    const dpr = Math.min(window.devicePixelRatio, 1.5); // Capped like HeroScene
+    const dpr = Math.min(window.devicePixelRatio, 1.5);
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
       ctx.scale(dpr, dpr);
@@ -41,13 +42,14 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
     let time = 0;
 
     const draw = () => {
-      if (!isRunning) return; // Don't schedule next frame if paused
+      if (!isRunning) return;
 
       animationId = requestAnimationFrame(draw);
 
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
+      if (w === 0 || h === 0) return;
 
       ctx.clearRect(0, 0, w, h);
 
@@ -57,7 +59,6 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
         ctx.beginPath();
         ctx.moveTo(0, centerY + wave.offset);
 
-        // Step by 3px instead of 2px — 33% less path computation
         for (let x = 0; x <= w; x += 3) {
           const y =
             centerY +
@@ -77,7 +78,6 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
         ctx.fillStyle = gradient;
         ctx.fill();
 
-        // Draw the line on top
         ctx.beginPath();
         ctx.moveTo(0, centerY + wave.offset);
         for (let x = 0; x <= w; x += 3) {
@@ -93,7 +93,6 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
         ctx.stroke();
       }
 
-      // Flowing particles along waves — reduced from 15 → 10
       for (let i = 0; i < 10; i++) {
         const wave = waves[i % waves.length];
         const px = (time * 40 + i * 120) % w;
@@ -120,7 +119,6 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
       time += 0.016;
     };
 
-    // Start/stop based on visibility
     const startLoop = () => {
       if (!isRunning) {
         isRunning = true;
@@ -134,7 +132,6 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
 
     let isIntersecting = false;
 
-    // Observe visibility in viewport
     const observer = new IntersectionObserver(
       ([entry]) => {
         isIntersecting = entry.isIntersecting;
@@ -148,21 +145,17 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
     );
     observer.observe(canvas);
 
-    // Also pause when tab is hidden and resume when visible
     const handleVisibility = () => {
       if (document.hidden) {
         stopLoop();
-      } else if (isIntersecting) {
+      } else if (isIntersecting || active) {
         startLoop();
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
 
-    // React to 'active' prop change
-    if (active && !document.hidden) {
+    if (active && (!document.hidden || !isIntersecting)) {
       startLoop();
-    } else if (!active && !isIntersecting) {
-      stopLoop();
     }
 
     return () => {
@@ -171,7 +164,7 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("resize", resize);
     };
-  }, []);
+  }, [active]);
 
   return (
     <section
@@ -181,13 +174,11 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
       <motion.div
         className="section-container text-center mb-12"
         initial={{ opacity: 0, y: 30 }}
-        animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       >
-
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#2d1b69] mb-4">
-          Liquidity in{" "}
-          <span className="gradient-text">Motion</span>
+          Liquidity in <span className="gradient-text">Motion</span>
         </h2>
         <p className="text-base md:text-lg text-(--text-secondary) max-w-2xl mx-auto font-light">
           Watch how liquidity flows through our protocol — dynamic, efficient,
@@ -198,8 +189,8 @@ export default function LiquiditySection({ active }: { active?: boolean }) {
       <motion.div
         className="relative w-full h-[300px] md:h-[400px]"
         initial={{ opacity: 0 }}
-        animate={shouldAnimate ? { opacity: 1 } : {}}
-        transition={{ duration: 1, delay: 0.3 }}
+        animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       >
         <canvas
           ref={canvasRef}

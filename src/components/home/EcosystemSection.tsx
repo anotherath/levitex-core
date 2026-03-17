@@ -310,7 +310,7 @@ export default function EcosystemSection({ active }: { active?: boolean }) {
       <motion.div
         className="section-container text-center mb-10 md:mb-16"
         initial={{ opacity: 0, y: 30 }}
-        animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
+        animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#2d1b69] mb-4">
@@ -325,8 +325,8 @@ export default function EcosystemSection({ active }: { active?: boolean }) {
       {/* Mobile & Tablet: Horizontal scroll carousel with Reveal effect */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
-        animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+        transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
       >
         <HorizontalScroll gap={12}>
           {ecosystemItems.map((item) => (
@@ -341,10 +341,14 @@ export default function EcosystemSection({ active }: { active?: boolean }) {
           <motion.div
             key={item.title}
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
-            animate={shouldAnimate ? { opacity: 1, y: 0, scale: 1 } : {}}
+            animate={
+              shouldAnimate
+                ? { opacity: 1, y: 0, scale: 1 }
+                : { opacity: 0, y: 40, scale: 0.95 }
+            }
             transition={{
               duration: 0.6,
-              delay: index * 0.12 + 0.2,
+              delay: index * 0.1 + 0.1,
               ease: [0.22, 1, 0.36, 1],
             }}
           >

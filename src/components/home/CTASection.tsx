@@ -65,7 +65,7 @@ export default function CTASection({ active }: { active?: boolean }) {
       <div className="section-container relative z-10 text-center">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
-          animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
+          animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#2d1b69] mb-6 leading-tight">
@@ -80,8 +80,8 @@ export default function CTASection({ active }: { active?: boolean }) {
 
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
-            animate={shouldAnimate ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            animate={shouldAnimate ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
             <Link href="/swap">
               <button className="gradient-button text-lg px-12 py-5 rounded-2xl">
@@ -108,8 +108,8 @@ export default function CTASection({ active }: { active?: boolean }) {
           <motion.div
             className="flex items-center justify-center gap-8 mt-14 flex-wrap"
             initial={{ opacity: 0 }}
-            animate={shouldAnimate ? { opacity: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.5 }}
+            animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
           >
             {["Audited", "Non-Custodial", "Open Source", "Multi-chain"].map(
               (badge) => (

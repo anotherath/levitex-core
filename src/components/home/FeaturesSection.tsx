@@ -204,7 +204,7 @@ export default function FeaturesSection({ active }: { active?: boolean }) {
       <motion.div
         className="section-container text-center mb-10 md:mb-16"
         initial={{ opacity: 0, y: 30 }}
-        animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
+        animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#2d1b69] mb-4">
@@ -219,8 +219,8 @@ export default function FeaturesSection({ active }: { active?: boolean }) {
       {/* Mobile: Horizontal scroll carousel with Reveal effect */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
-        animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+        transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
       >
         <HorizontalScroll gap={12}>
           {features.map((feature) => (
@@ -239,10 +239,10 @@ export default function FeaturesSection({ active }: { active?: boolean }) {
           <motion.div
             key={feature.title}
             initial={{ opacity: 0, y: 50 }}
-            animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
+            animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
             transition={{
               duration: 0.7,
-              delay: index * 0.15 + 0.2,
+              delay: index * 0.1 + 0.15,
               ease: [0.22, 1, 0.36, 1],
             }}
           >

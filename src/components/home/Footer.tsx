@@ -26,21 +26,21 @@ const footerLinks = {
 export default function Footer() {
   return (
     <footer
-      className="relative w-full overflow-hidden snap-start"
+      className="relative w-full overflow-hidden snap-start lg:pt-8 "
       style={{
         background: "var(--bg-primary)",
         borderTop: "1px solid rgba(139, 92, 246, 0.08)",
       }}
     >
       <div className="section-container">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 mb-16">
-          {/* Brand Section */}
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-x-8 gap-y-12 lg:gap-x-12 mb-20">
+          {/* Brand & Mission - Takes 2 columns on desktop for better presence */}
+          <div className="col-span-2 lg:col-span-2 flex flex-col pr-0 lg:pr-12">
             <Link
               href="/"
               className="flex items-center gap-1 my-6 group w-fit text-[#2d1b69]"
             >
-              <div className="relative flex items-center justify-center w-9 h-8">
+              <div className="relative flex items-center justify-center w-9 h-8 transform transition-transform duration-300 group-hover:scale-110">
                 <svg
                   width="32"
                   height="32"
@@ -51,7 +51,7 @@ export default function Footer() {
                 >
                   <g
                     stroke="#2d1b69"
-                    strokeWidth="1.1"
+                    strokeWidth="1.2"
                     fill="none"
                     strokeLinejoin="round"
                     transform="rotate(36, 16, 16)"
@@ -62,13 +62,11 @@ export default function Footer() {
                     <polygon points="16,16 23,24 9,24" />
                     <polygon points="16,16 9,24 5,11.5" />
                     <polygon points="16,16 5,11.5 16,4" />
-
                     <polygon points="16,4 27,11.5 24,2" />
                     <polygon points="27,11.5 23,24 30,17.5" />
                     <polygon points="23,24 9,24 16,30" />
                     <polygon points="9,24 5,11.5 2,17.5" />
                     <polygon points="5,11.5 16,4 8,2" />
-
                     <polygon points="8,2 24,2 16,4" />
                     <polygon points="24,2 30,17.5 27,11.5" />
                     <polygon points="30,17.5 16,30 23,24" />
@@ -77,65 +75,64 @@ export default function Footer() {
                   </g>
                 </svg>
               </div>
-
               <span className="text-xl font-bold tracking-tight">LEVITEX</span>
             </Link>
-            <p className="text-base text-(--text-secondary) leading-relaxed max-w-sm">
+            <p className="text-base text-(--text-secondary) leading-relaxed max-w-sm font-light">
               A lighter, faster way to explore decentralized liquidity. Built
               for the next generation of frictionless DeFi.
             </p>
           </div>
 
-          {/* Links Sections - Arranged as requested 2x2 grid feel */}
-          <div className="lg:col-span-3 grid grid-cols-2 gap-10">
-            {/* Column 1: Protocol & Community */}
-            <div className="flex flex-col gap-16">
-              {/* Protocol */}
-              <div>
-                <h4 className="text-sm font-bold text-[#1a1d2e] mb-6 uppercase tracking-widest">
-                  Protocol
-                </h4>
-                <ul className="space-y-4">
-                  {footerLinks.Protocol.map((link) => (
-                    <li key={link.label}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-[#5c6178] hover:text-(--accent-violet) transition-colors duration-200"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+          {/* Links Sections */}
+          {/* We use 3 separate containers for 3 columns on LG. 
+              On Mobile, we wrap Protocol/Community to stack them in one column. */}
 
-              {/* Community */}
-              <div>
-                <h4 className="text-sm font-bold text-[#1a1d2e] mb-6 uppercase tracking-widest">
-                  Community
-                </h4>
-                <ul className="space-y-4">
-                  {footerLinks.Community.map((link) => (
-                    <li key={link.label}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-[#5c6178] hover:text-(--accent-violet) transition-colors duration-200"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+          <div className="flex flex-col gap-12 lg:contents">
+            {/* Protocol */}
+            <div className="col-span-1">
+              <h4 className="text-[11px] font-bold text-[#1a1d2e] mb-6 uppercase tracking-[0.2em] opacity-80">
+                Protocol
+              </h4>
+              <ul className="space-y-3.5">
+                {footerLinks.Protocol.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-[#5c6178] hover:text-(--accent-violet) transition-colors duration-200"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            {/* Column 2: Resources */}
-            <div>
-              <h4 className="text-sm font-bold text-[#1a1d2e] mb-6 uppercase tracking-widest">
+            {/* Resources - On desktop this is Col 4, on mobile it's Col 2 */}
+            <div className="col-span-1 lg:order-last">
+              <h4 className="text-[11px] font-bold text-[#1a1d2e] mb-6 uppercase tracking-[0.2em] opacity-80">
                 Resources
               </h4>
-              <ul className="space-y-4">
+              <ul className="space-y-3.5">
                 {footerLinks.Resources.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-[#5c6178] hover:text-(--accent-violet) transition-colors duration-200"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Community - Stacks under Protocol on mobile, stands alone on LG */}
+            <div className="col-span-1">
+              <h4 className="text-[11px] font-bold text-[#1a1d2e] mb-6 uppercase tracking-[0.2em] opacity-80">
+                Community
+              </h4>
+              <ul className="space-y-3.5">
+                {footerLinks.Community.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}

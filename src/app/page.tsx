@@ -306,7 +306,7 @@ export default function Home() {
       </div>
 
       {/* Vertical Navigation Dots */}
-      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
+      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden lg:flex flex-col gap-3">
         {sections.map((_, i) => (
           <button
             key={i}

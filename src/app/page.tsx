@@ -170,11 +170,11 @@ export default function Home() {
 
   return (
     <main ref={mainRef} className="min-h-screen overflow-x-hidden snap-y snap-proximity scroll-smooth">
-      <div className="snap-start"><HeroSection /></div>
-      <div className="snap-start"><FeaturesSection /></div>
-      <div className="snap-start"><LiquiditySection /></div>
-      <div className="snap-start"><EcosystemSection /></div>
-      <div className="snap-start"><CTASection /></div>
+      <div className="snap-center"><HeroSection /></div>
+      <div className="snap-center"><FeaturesSection /></div>
+      <div className="snap-center"><LiquiditySection /></div>
+      <div className="snap-center"><EcosystemSection /></div>
+      <div className="snap-center"><CTASection /></div>
       <div className="snap-start"><Footer /></div>
     </main>
   );

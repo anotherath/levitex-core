@@ -20,7 +20,13 @@ export function useFullpageScroll(containerRef: React.RefObject<HTMLElement | nu
     isScrolling.current = true;
     currentIndex.current = index;
 
-    sections[index].scrollIntoView({ behavior: "smooth" });
+    const section = sections[index];
+    const isLastSection = index === sections.length - 1;
+
+    section.scrollIntoView({ 
+      behavior: "smooth", 
+      block: isLastSection ? "start" : "center" 
+    });
 
     // Cooldown to prevent rapid scroll — wait for animation to finish
     clearTimeout(cooldownTimer.current);

@@ -54,14 +54,7 @@ export default function SwapPreviewCard() {
             "0 20px 60px rgba(139, 92, 246, 0.12), 0 8px 24px rgba(0, 0, 0, 0.06)",
         }}
       >
-        {/* Top glow accent */}
-        <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[2px]"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, #8b5cf6, #38bdf8, transparent)",
-          }}
-        />
+
 
         <div className="p-6">
           {/* Header */}

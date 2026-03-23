@@ -3,18 +3,21 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
   { label: "Swap", href: "/swap" },
   { label: "Pools", href: "/pools" },
-  { label: "Portfolio", href: "/portfolio" },
-  { label: "Analytics", href: "/analytics" },
+  { label: "Bridge", href: "/bridge" },
+  { label: "Flux", href: "/flux" },
 ];
 
 export default function Navbar() {
   const [isCompact, setIsCompact] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hideNav, setHideNav] = useState(false);
+  const pathname = usePathname();
+  const isAppPage = pathname === "/swap" || pathname === "/bridge";
 
   useEffect(() => {
     // 1. Lắng nghe sự kiện chuyển Section để co giãn Navbar
@@ -66,18 +69,20 @@ export default function Navbar() {
         <div
           className="mx-auto transition-all duration-500"
           style={{
-            maxWidth: isCompact ? "900px" : "100%",
-            margin: isCompact ? "12px auto" : "0 auto",
-            borderRadius: isCompact ? "20px" : "0",
-            background: isCompact
-              ? "rgba(255, 255, 255, 0.7)"
-              : "rgba(246, 248, 251, 0.5)",
+            maxWidth: isCompact || isAppPage ? "900px" : "100%",
+            margin: isCompact || isAppPage ? "12px auto" : "0 auto",
+            borderRadius: isCompact || isAppPage ? "20px" : "0",
+            background:
+              isCompact || isAppPage
+                ? "rgba(255, 255, 255, 0.7)"
+                : "rgba(246, 248, 251, 0.5)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-            boxShadow: isCompact
-              ? "0 4px 30px rgba(139, 92, 246, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)"
-              : "none",
-            padding: isCompact ? "0 24px" : "0 32px",
+            boxShadow:
+              isCompact || isAppPage
+                ? "0 4px 30px rgba(139, 92, 246, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)"
+                : "none",
+            padding: isCompact || isAppPage ? "0 24px" : "0 32px",
           }}
         >
           <div className="flex items-center justify-between h-16">
@@ -130,7 +135,11 @@ export default function Navbar() {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="px-4 py-2 rounded-xl text-sm font-medium text-(--text-secondary) hover:text-(--text-primary) hover:bg-[rgba(139,92,246,0.06)] transition-all duration-200"
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    pathname === link.href
+                      ? "text-[#8b5cf6]"
+                      : "text-(--text-secondary) hover:text-violet-400"
+                  }`}
                 >
                   {link.label}
                 </Link>
@@ -139,13 +148,12 @@ export default function Navbar() {
 
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center gap-3">
-              <Link
-                href="/swap"
+              <button
                 className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-px shadow-[0_4px_16px_rgba(139,92,246,0.2)]"
                 style={{ background: "var(--gradient-button)" }}
               >
-                Launch App
-              </Link>
+                {isAppPage ? "Connect Wallet" : "Launch App"}
+              </button>
             </div>
 
             {/* Mobile menu toggle */}
@@ -208,21 +216,24 @@ export default function Navbar() {
                   <Link
                     key={link.label}
                     href={link.href}
-                    className="px-4 py-3 rounded-xl text-sm font-medium text-(--text-secondary) hover:text-(--text-primary) hover:bg-[rgba(139,92,246,0.06)] transition-all"
+                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                      pathname === link.href 
+                        ? "text-[#8b5cf6]" 
+                        : "text-(--text-secondary) hover:text-violet-400"
+                    }`}
                     onClick={() => setMobileOpen(false)}
                   >
                     {link.label}
                   </Link>
                 ))}
               </div>
-              <Link
-                href="/swap"
+              <button
                 className="mt-4 block w-full py-3 rounded-xl text-center text-sm font-semibold text-white shadow-[0_4px_16px_rgba(139,92,246,0.2)]"
                 style={{ background: "var(--gradient-button)" }}
                 onClick={() => setMobileOpen(false)}
               >
-                Launch App
-              </Link>
+                {isAppPage ? "Connect Wallet" : "Launch App"}
+              </button>
             </motion.div>
           </motion.div>
         )}
